@@ -4,7 +4,6 @@
 #include<unistd.h>
 
 typedef struct {
-    char id[64];
     char nombre[64];
     char apellido[64];
     char email[128];
@@ -16,13 +15,13 @@ struct node{
     struct node *next;
 };
 
-struct node *crearNodo(char *id, char *nombre, char *apellido, char *email, char *telefono){
+struct node *crearNodo(char *nombre, char *apellido, char *email, char *telefono){
     struct node *nuevoNodo = malloc(sizeof(struct node));
     if(nuevoNodo == NULL){
         printf("Error al asignar memoria\n");
         exit(1);
     }
-    strcpy(nuevoNodo->cliente.id, id);
+
     strcpy(nuevoNodo->cliente.nombre, nombre);
     strcpy(nuevoNodo->cliente.apellido, apellido);
     strcpy(nuevoNodo->cliente.email, email);
@@ -37,45 +36,38 @@ struct node *crearNodo(char *id, char *nombre, char *apellido, char *email, char
 void insertar(struct node **head, struct node *nuevoNodo){
     if(*head == NULL){
         *head = nuevoNodo;
+        nuevoNodo->next = *head;
     }
 
     else{
         struct node *temp = *head;
-        while(temp->next != NULL){
+        while(temp->next != *head){
             temp = temp->next;
         }
         temp->next = nuevoNodo;
+        nuevoNodo->next = *head;
     }
 }
 
 void mostarLista(struct node *head) 
 {   
+    if(head == NULL){
+        printf("lista vacia\n");
+        return;
+    }
+    
     struct node* temp = head;
-    while(temp!=NULL)
+
+    do
     {
-        printf("id:  %s\n", temp->cliente.id);
         printf("nombre: %s\n", temp->cliente.nombre);
         printf("apellido: %s\n", temp->cliente.apellido);
         printf("email: %s\n", temp->cliente.email);
         printf("telefono: %s\n", temp->cliente.telefono);
         printf("------------------------\n");
         temp = temp->next;
-    }
+    }while(temp != head);
     
-}
-
-void buscarIdExistente(struct node *head, char *id){
-    struct node* temp = head;
-    while(temp != NULL){
-        if(strcmp(temp->cliente.id, id)==0){
-            printf("el id si existe\n");
-        }
-        else{
-            printf("el id: %s no existe en la lista\n",id);
-        }
-        temp = temp->next;
-    }
-
 }
 
 
@@ -84,18 +76,15 @@ void buscarIdExistente(struct node *head, char *id){
 int main(){
     struct node *head = NULL;
     struct node *nuevoNodo;
-    char id[64], nombre[64], apellido[64], email[128], telefono[15];
+    char nombre[64], apellido[64], email[128], telefono[15];
     int opcion;
     do{
         printf("1. Agregar cliente\n");
         printf("2. mostar lista\n");
-        printf("3. otras funciones\n");
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
         switch(opcion){
             case 1:
-                printf("ingrese el id: ");
-                scanf("%s", id);
                 printf("Ingrese el nombre: ");
                 scanf("%s", nombre);
                 printf("Ingrese el apellido: ");
@@ -104,35 +93,20 @@ int main(){
                 scanf("%s", email);
                 printf("Ingrese el telefono: ");
                 scanf("%s", telefono);
-                nuevoNodo = crearNodo(id, nombre, apellido, email, telefono);
+                nuevoNodo = crearNodo(nombre, apellido, email, telefono);
                 insertar(&head, nuevoNodo);
                 break;
             case 2:
                 printf("mostar lista\n");
                 mostarLista(head);
                 break;
-
             case 3:
-                int opcionOtrasFunciones;
-                printf("1.comprobar que el id existe\n");
-                scanf("%d",&opcionOtrasFunciones);
-                switch (opcionOtrasFunciones)
-                {
-                case 1:
-                    char idBusqueda[64];
-                    printf("ingrese el id a buscar: \n");
-                    scanf("%s",idBusqueda);
-                    buscarIdExistente(head,idBusqueda);
+                opcion = 3;
                 break;
-                
-                default:
-                    break;
-                }
-            break;
             default:
                 printf("Opcion invalida\n");
         }
-    }while(opcion != 4);
+    }while(opcion != 3);
 
     return 0;
 }
