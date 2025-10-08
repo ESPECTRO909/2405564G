@@ -159,8 +159,22 @@ int main(void){
                 break;
             
             case 3:
+                int opcion3=0;
+                do{
+                limpiarPantalla();
                 printf("mostrar pila\n");
                 mostrarPila(miPila);
+                printf("desea desapilar el paquete de la cima? 1.si  2.no\n");
+                int opcionDesapilar;
+                scanf("%d",&opcionDesapilar);
+                if(opcionDesapilar == 1){
+                    paquetes paqueteDesapilado;
+                    if(paqueteStackPop(miPila, &paqueteDesapilado)){
+                        printf("Paquete desapilado: Folio %d\n", paqueteDesapilado.folio);
+                    }
+                }else{opcion3=2;}
+                }   
+                while(opcion3 !=2);
                 break;
             case 4:
                 printf("saliendo...\n");
