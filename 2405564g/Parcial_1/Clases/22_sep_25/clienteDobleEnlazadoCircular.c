@@ -4,6 +4,7 @@
 #include<unistd.h>
 
 typedef struct {
+    char id[64];
     char nombre[64];
     char apellido[64];
     char email[128];
@@ -16,13 +17,14 @@ struct node{
     struct node *prev;
 };
 
-struct node *crearNodo(char *nombre, char *apellido, char *email, char *telefono){
+struct node *crearNodo(char *id, char *nombre, char *apellido, char *email, char *telefono){
     //reservado de memoria para el nodo
     struct node *nuevoNodo = malloc(sizeof(struct node));
     if(nuevoNodo == NULL){
         printf("Error al asignar memoria\n");
         exit(1);
     }
+    strcpy(nuevoNodo->cliente.id, id);
     strcpy(nuevoNodo->cliente.nombre, nombre);
     strcpy(nuevoNodo->cliente.apellido, apellido);
     strcpy(nuevoNodo->cliente.email, email);
@@ -73,14 +75,22 @@ void insertarInicio(struct node **head, struct node *nuevoNodo){
 void mostarLista(struct node *head) 
 {   
     struct node* temp = head;
+    if(head ==NULL){
+        printf("la lista esta vacia\n");
+        return;
+}
+    else{
     do{
         printf("------------------------------\n");
+        printf("id:  %s\n", temp->cliente.id);
         printf("nombre: %s\n", temp->cliente.nombre);
         printf("apellido: %s\n", temp->cliente.apellido);
         printf("email: %s\n", temp->cliente.email);
         printf("telefono: %s\n", temp->cliente.telefono);
         temp = temp->prev;
     }while(temp!=head);
+}
+    printf("\n");
 }
 
 //actualizar funcion para esta lista , queda en bucle debido que no hay un NULL
@@ -95,6 +105,7 @@ void mostarListaAlreves(struct node *head){
 
     do{  
         printf("------------------------------\n");
+        printf("id: %s\n", temp->cliente.id);
         printf("nombre: %s\n", temp->cliente.nombre);
         printf("apellido: %s\n", temp->cliente.apellido);
         printf("email: %s\n", temp->cliente.email);
@@ -142,6 +153,62 @@ void borrarPorNombre(struct node **head, const char *nombre){
     printf("no se encontro el nodo con el nombre %s \n",nombre);
 }
 
+void borrarPorId(struct node **head, char *id){
+    if(*head == NULL){
+        printf("Lista vacia\n");
+        return ;
+    }
+
+    struct node *temp = *head;
+
+    do{
+        //comparo si el id del nodo es igual al id que quiero borrar
+        if(strcmp(temp->cliente.id, id) == 0){
+
+            //caso especial si es el unico nodo en la lista
+            if(temp->next == temp && temp->prev == temp){
+            free(temp);
+            *head = NULL;
+            printf("nodo con el id: %s eliminado, la lista ahora esta vacia\n",id);
+            return ;
+            }
+        
+            //renlazado de nodos 
+            temp->prev->next = temp->next;
+            temp->next->prev = temp->prev;
+
+            //si el nodo a borrar es la cabeza, actualizo la cabeza
+            if(temp == *head){
+                *head = temp->next;
+            }
+            printf("nodo con el id: %s eliminado correctamente\n",id);
+            free(temp);
+            return ;
+        }
+            
+        temp = temp->next;
+    }while(temp != *head);
+    printf("no se encontro el nodo con el nombre %s \n",id);
+}
+
+//funcion para buscar un nodo por su id lo uso en el main para verificar si un id ya existe, me devuelve el nodo si lo encuentra o NULL si no
+struct node* buscarPorId(struct node *head, char *id){
+    if(head == NULL){
+        printf("la lista esta vacia\n");
+        return NULL;
+    }
+
+    struct node* temp = head;
+
+    do{
+        if(strcmp(temp->cliente.id, id) == 0){
+            return temp;
+        }
+        temp = temp->next;
+    }while(temp != head);
+
+    return NULL;
+}
 
 
 
@@ -157,25 +224,36 @@ void freeLista(struct node* head){
     }
 }
 
+void limpiarPantalla(){
+        system("clear");
+}
+
 
 
 int main(){
     struct node *head = NULL;
     struct node *nuevoNodo;
-    char nombre[64], apellido[64], email[128], telefono[15];
-    int opcion;
+    char id[64], nombre[64], apellido[64], email[128], telefono[15];
+    int opcion,opcion3;
     int opcionLista;
+    limpiarPantalla();
     do{
+        printf("\n");
+        limpiarPantalla();
+
         printf("-----------------------\n");
         printf("1. Agregar cliente\n");
         printf("2. mostar lista\n");
         printf("3. mas opciones\n");
-        printf("4. salir\n");
+        printf("4. busquedas\n");
+        printf("5. salir\n");
 
         printf("Ingrese una opcion: ");
         scanf("%d", &opcion);
         switch(opcion){
             case 1:
+                printf("ingrese el id:   "  );
+                scanf("%s", id);
                 printf("Ingrese el nombre: ");
                 scanf("%s", nombre);
                 printf("Ingrese el apellido: ");
@@ -184,7 +262,7 @@ int main(){
                 scanf("%s", email);
                 printf("Ingrese el telefono: ");
                 scanf("%s", telefono);
-                nuevoNodo = crearNodo(nombre, apellido, email, telefono);
+                nuevoNodo = crearNodo(id, nombre, apellido, email, telefono);
                 printf("desea ingresarlo al principio de la lista: 1   al final: 2\n");scanf("%d",&opcionLista);
                 if(opcionLista==1){
                     insertarInicio(&head, nuevoNodo);
@@ -214,20 +292,71 @@ int main(){
             
                 case 3:
                     char borrarNombre[64];
+                    char borrarId[64];
                     printf("mas opciones\n");
-                    printf("1.borrar por nombre\n"); scanf("%s",borrarNombre);
-                    borrarPorNombre(&head, borrarNombre);
+                    printf("elige una opcion: \n");
+                    printf("1.borrar por nombre\n"); 
+                    printf("2.borrar por id\n");
+                    scanf("%d",&opcion3);
+                    if(opcion3 ==1){
+                        printf("ingrese el nombre a borrar: \n");
+                        scanf("%s",borrarNombre);
+                        borrarPorNombre(&head, borrarNombre);
+                    }
+                    else if(opcion3 ==2){
+                        printf("ingrese el id a borrar: \n");
+                        scanf("%s",borrarId);
+                        borrarPorId(&head, borrarId);
+                    }
+                    else{
+                        printf("opcion no valida\n");
+                        break;
+                    }
+                    
                     break;
                 
                 case 4:
+                    printf("busquedas\n");
+                    char idBuscar[64];
+                    printf("ingrese el id a buscar: \n");
+                    scanf("%s",idBuscar);
+                    struct node* resultado = buscarPorId(head, idBuscar);
+                    if(resultado != NULL){
+                        printf("nodo encontrado:\n");
+                        printf("id: %s\n", resultado->cliente.id);
+                        printf("nombre: %s\n", resultado->cliente.nombre);
+                        printf("apellido: %s\n", resultado->cliente.apellido);
+                        printf("email: %s\n", resultado->cliente.email);
+                        printf("telefono: %s\n", resultado->cliente.telefono);
+                        printf("-------------------------------\n");
+                        int opcionEliminar;
+                        printf("desea eliminar este nodo? 1.si  2.no\n");
+                        scanf("%d",&opcionEliminar);
+                        if(opcionEliminar == 1){
+                            borrarPorId(&head, idBuscar);
+                        }else{
+                            break;
+                        }
+                    }else{
+                        printf("nodo no encontrado\n");
+                    }
+                    break;
+                    
+                case 5:
                     printf("saliendo\n");
-                    opcion = 4;
-                break;
+                    opcion = 5;
+                    break;
                 
             default:
                 printf("Opcion invalida\n");
         }
-    }while(opcion != 4);
+        char enter;
+        printf("presione enter para continuar\n");
+        getchar();
+        scanf("%c",&enter);
+        
+
+    }while(opcion != 5);
     
     //liberacion de toda la memoria reservada
     freeLista(head);
